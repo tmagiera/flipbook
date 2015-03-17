@@ -19,11 +19,6 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".DownloadIntentService"
-            android:exported="false" >
-        </service>
-
     </application>
 
 </manifest>

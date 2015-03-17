@@ -12,14 +12,14 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DrawableLoader {
+    private final static int cacheSize = 20;
     private static Map<String, Drawable> drawableMap;
-    private WeakReference<ImageView> imageViewReference;
+    //private WeakReference<ImageView> imageViewReference;
 
     public DrawableLoader() {
         drawableMap = new HashMap<String, Drawable>();
@@ -34,6 +34,14 @@ public class DrawableLoader {
         try {
             InputStream is = fetch(urlString);
             Drawable drawable = Drawable.createFromStream(is, "src");
+            Log.d(this.getClass().getSimpleName(),"count of object in cache: " + drawableMap.size());
+            if (drawableMap.size() > cacheSize) {
+                for (Map.Entry<String, Drawable> entry : drawableMap.entrySet()) {
+                    Log.d(this.getClass().getSimpleName(),"remove from cache: " + entry.getKey());
+                    drawableMap.remove(entry.getKey());
+                    break;
+                };
+            }
             drawableMap.put(urlString, drawable);
             Log.d(this.getClass().getSimpleName(), "got a thumbnail drawable: " + drawable.getBounds() + ", "
                     + drawable.getIntrinsicHeight() + "," + drawable.getIntrinsicWidth() + ", "
@@ -68,7 +76,6 @@ public class DrawableLoader {
         Thread thread = new Thread() {
             @Override
             public void run() {
-                //TODO : set imageView to a "pending" image
                 Drawable drawable = fetchDrawable(urlString);
                 Message message = handler.obtainMessage(1, drawable);
                 handler.sendMessage(message);

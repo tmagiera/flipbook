@@ -40,21 +40,27 @@ import java.util.List;
 public class KwejkXmlParser {
 
     private static final String ns = null;
+    private List<Entry> entries = new ArrayList();
+    private Integer pageNumber;
 
-    public List<Entry> parse(String xml) throws XmlPullParserException, IOException {
-        try {
-            XmlPullParser parser = Xml.newPullParser();
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            parser.setInput(new ByteArrayInputStream(Charset.forName("UTF-16").encode(xml).array()), null);
-            parser.nextTag();
-            return readFeed(parser);
-        } finally {
-        }
+
+    public void parse(String xml) throws XmlPullParserException, IOException {
+        XmlPullParser parser = Xml.newPullParser();
+        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+        parser.setInput(new ByteArrayInputStream(Charset.forName("UTF-16").encode(xml).array()), null);
+        parser.nextTag();
+        readFeed(parser);
     }
 
-    private List<Entry> readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
-        List entries = new ArrayList();
+    public List<Entry> getEntryList() {
+        return entries;
+    }
 
+    public Integer getPageNumber() {
+        return pageNumber;
+    }
+
+    private void readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, ns, "xml");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -67,11 +73,12 @@ public class KwejkXmlParser {
                 if (entry != null) {
                     entries.add(entry);
                 }
+            } else if (name.equals("paging")) {
+                pageNumber = readPageNumber(parser);
             } else {
                 skip(parser);
             }
         }
-        return entries;
     }
 
     public static class Entry {
@@ -79,12 +86,14 @@ public class KwejkXmlParser {
         public final String source;
         public final String title;
         public final Integer height;
+        public final Integer width;
 
-        public Entry(Integer id, String source, String title, Integer height) {
+        public Entry(Integer id, String source, String title, Integer height, Integer width) {
             this.id = id;
             this.source = source;
             this.title = title;
             this.height = height;
+            this.width = width;
         }
     }
 
@@ -96,6 +105,7 @@ public class KwejkXmlParser {
         String source = null;
         String title = null;
         Integer height = null;
+        Integer width = null;
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -103,16 +113,19 @@ public class KwejkXmlParser {
             String name = parser.getName();
             switch (name) {
                 case "id":
-                    id = readId(parser);
+                    id = readInteger(parser, "id");
                     break;
                 case "source":
-                    source = readSource(parser);
+                    source = readString(parser, "source");
                     break;
                 case "title":
-                    title = readTitle(parser);
+                    title = readString(parser, "title");
                     break;
                 case "height":
-                    height = readHeight(parser);
+                    height = readInteger(parser, "height");
+                    break;
+                case "width":
+                    width = readInteger(parser, "width");
                     break;
                 default:
                     skip(parser);
@@ -122,43 +135,48 @@ public class KwejkXmlParser {
             return null;
         }
 
-        Log.d("KwejkParser", "id: " + id + ";source: " + source + ";title " + title + ";height " + height);
-        return new Entry(id, source, title, height);
+        Log.d("KwejkParser", "id: " + id + ";source: " + source + ";title " + title + ";height " + height + ";width " + width);
+        return new Entry(id, source, title, height, width);
     }
 
-    private Integer readId(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "id");
+
+    // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
+    // to their respective "read" methods for processing. Otherwise, skips the tag.
+    private Integer readPageNumber(XmlPullParser parser) throws XmlPullParserException, IOException {
+        Integer currentPage = null;
+
+        parser.require(XmlPullParser.START_TAG, ns, "paging");
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
+            String name = parser.getName();
+            switch (name) {
+                case "current_page":
+                    currentPage = readInteger(parser, "current_page");
+                    break;
+                default:
+                    skip(parser);
+            }
+        }
+
+        Log.d("KwejkParser", "current_page: " + currentPage);
+        return currentPage;
+    }
+
+
+    private Integer readInteger(XmlPullParser parser, String field) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, ns, field);
         Integer id = Integer.parseInt(readText(parser));
-        parser.require(XmlPullParser.END_TAG, ns, "id");
+        parser.require(XmlPullParser.END_TAG, ns, field);
         return id;
     }
 
-    private String readSource(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "source");
+    private String readString(XmlPullParser parser, String field) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, ns, field);
         String source = readText(parser);
-//        String relType = parser.getAttributeValue(null, "rel");
-//        if (tag.equals("link")) {
-//            if (relType.equals("alternate")){
-//                link = parser.getAttributeValue(null, "href");
-//                parser.nextTag();
-//            }
-//        }
-        parser.require(XmlPullParser.END_TAG, ns, "source");
+        parser.require(XmlPullParser.END_TAG, ns, field);
         return source;
-    }
-
-    private String readTitle(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "title");
-        String title = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "title");
-        return title;
-    }
-
-    private Integer readHeight(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "height");
-        Integer id = Integer.parseInt(readText(parser));
-        parser.require(XmlPullParser.END_TAG, ns, "height");
-        return id;
     }
 
     // For the tags title and summary, extracts their text values.

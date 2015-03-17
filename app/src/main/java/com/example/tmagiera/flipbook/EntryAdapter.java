@@ -17,16 +17,16 @@ public class EntryAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
     private List<Entry> mEntries;
     private DrawableLoader drawableLoader = new DrawableLoader();
-
-    private static class ViewHolder {
-        public final ImageView image;
-        public final TextView title;
-
-        public ViewHolder(ImageView image, TextView title) {
-            this.image = image;
-            this.title = title;
-        }
-    }
+//
+//    private static class ViewHolder {
+//        public final ImageView image;
+//        public final TextView title;
+//
+//        public ViewHolder(ImageView image, TextView title) {
+//            this.image = image;
+//            this.title = title;
+//        }
+//    }
 
     public EntryAdapter(Context context, List<Entry> entries) {
         mInflater = LayoutInflater.from(context);
@@ -58,7 +58,7 @@ public class EntryAdapter extends BaseAdapter {
             Log.d("EntryAdapter", convertView.toString());
             image = (ImageView)convertView.findViewById(R.id.entryImage);
             title = (TextView)convertView.findViewById(R.id.entryTitle);
-            convertView.setTag(new ViewHolder(image, title));
+//            convertView.setTag(new ViewHolder(image, title));
 //        } else {
 //            ViewHolder holder = (ViewHolder)convertView.getTag();
 //            image = holder.image;
@@ -73,4 +73,5 @@ public class EntryAdapter extends BaseAdapter {
 
         return convertView;
     }
+
 }
