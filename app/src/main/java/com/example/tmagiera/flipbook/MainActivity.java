@@ -39,7 +39,7 @@ public class MainActivity extends ActionBarActivity {
         public void onReceive(Context context, Intent intent) {
             Integer pageNumber = intent.getIntExtra("pageNumber", 0);
             Log.d("Broadcasted", pageNumber.toString());
-            for (int i = pageNumber; i > pageNumber - 3; i--) {
+            for (int i = pageNumber - 1; i > pageNumber - 3; i--) {
                 new DownloadKwejkXmlTask(mActivity).execute("http://api.kwejk.pl?page=" + i);
             }
         }

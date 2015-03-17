@@ -1,7 +1,6 @@
 package com.example.tmagiera.flipbook;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,7 +54,7 @@ public class EntryAdapter extends BaseAdapter {
 
  //       if (convertView == null) {
             convertView = mInflater.inflate(R.layout.list_entry, parent, false);
-            Log.d("EntryAdapter", convertView.toString());
+//            Log.d("EntryAdapter", convertView.toString());
             image = (ImageView)convertView.findViewById(R.id.entryImage);
             title = (TextView)convertView.findViewById(R.id.entryTitle);
 //            convertView.setTag(new ViewHolder(image, title));

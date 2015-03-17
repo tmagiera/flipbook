@@ -18,7 +18,7 @@ import java.util.List;
 public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
     private Activity activity;
     private static List<Entry> entries;
-    private static Integer pageNumber;
+    private Integer pageNumber;
     private boolean emitPageNumber = false;
 
     public DownloadKwejkXmlTask(Activity activity) {
@@ -31,7 +31,7 @@ public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
 
     @Override
     protected String doInBackground(String... url) {
-        Log.d("DownloadKwejkXmlTask", url[0]);
+        Log.d(this.getClass().getSimpleName(), "Downloading: " + url[0]);
         String data = download(url[0]);
         if (url.length > 1) {
             emitPageNumber = true;
@@ -58,11 +58,12 @@ public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
             pageNumber = parser.getPageNumber();
 
         } catch (Exception e) {
-            Log.d("XMLParser", "Cannot getEntryList XML " + data);
+            Log.d(this.getClass().getSimpleName(), "Cannot getEntryList XML " + data);
             e.printStackTrace();
             return;
         }
 
+        Log.d(this.getClass().getSimpleName(), "Number of entries: " + entries.size());
         EntryAdapter adapter = new EntryAdapter(activity, entries);
         ListView listView = (ListView) activity.findViewById(R.id.listview);
         listView.setAdapter(adapter);
@@ -77,7 +78,7 @@ public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
 
     private String download(String location) {
 
-        Log.d("HTTP", location);
+        Log.d(this.getClass().getSimpleName(), location);
         try {
             URL url = new URL(location);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -88,7 +89,7 @@ public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
             conn.connect();
 
             int response = conn.getResponseCode();
-            Log.d("HTTP", "The response code is: " + response);
+            Log.d(this.getClass().getSimpleName(), "The response code is: " + response);
 
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder sb = new StringBuilder();
@@ -99,9 +100,9 @@ public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
                     sb.append(read);
                 }
 
-                Log.d("HTTP", "Type: text Bytes: " + sb.toString().length() + " Data: " + sb.toString());
+                Log.d(this.getClass().getSimpleName(), "Type: text Bytes: " + sb.toString().length() + " Data: " + sb.toString());
             } catch (Exception e) {
-                Log.d("HTTP", "Error");
+                Log.d(this.getClass().getSimpleName(), "Error");
             }
 
             return sb.toString();

@@ -34,11 +34,10 @@ public class DrawableLoader {
         try {
             InputStream is = fetch(urlString);
             Drawable drawable = Drawable.createFromStream(is, "src");
-            Log.d(this.getClass().getSimpleName(),"count of object in cache: " + drawableMap.size());
             if (drawableMap.size() > cacheSize) {
                 for (Map.Entry<String, Drawable> entry : drawableMap.entrySet()) {
-                    Log.d(this.getClass().getSimpleName(),"remove from cache: " + entry.getKey());
                     drawableMap.remove(entry.getKey());
+                    Log.d(this.getClass().getSimpleName(),"removed from cache: " + entry.getKey());
                     break;
                 };
             }
