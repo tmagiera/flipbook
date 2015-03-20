@@ -60,14 +60,14 @@ public class AnimatedGifLoader {
 
         if (drawableMap.containsKey(urlString)) {
             //imageViewReference.get().setImageDrawable(drawableMap.get(urlString));
-            imageView.setAnimatedGif(drawableMap.get(urlString), AnimatedGifImageView.TYPE.FIT_CENTER);
+            imageView.setAnimatedGif(drawableMap.get(urlString), AnimatedGifImageView.TYPE.STREACH_TO_FIT);
         }
 
         final Handler handler = new Handler() {
             @Override
             public void handleMessage(Message message) {
                 //imageViewReference.get().setImageDrawable((Drawable) message.obj);
-                imageView.setAnimatedGif((byte[]) message.obj, AnimatedGifImageView.TYPE.FIT_CENTER);
+                imageView.setAnimatedGif((byte[]) message.obj, AnimatedGifImageView.TYPE.STREACH_TO_FIT);
             }
         };
 

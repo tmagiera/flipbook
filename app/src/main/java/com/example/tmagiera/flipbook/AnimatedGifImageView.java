@@ -180,7 +180,7 @@ public class AnimatedGifImageView extends ImageView {
                     mScaleH = mScaleW = 1f;
                     break;
                 case STREACH_TO_FIT:
-                    mScaleH = scaleH;
+                    mScaleH = scaleW;
                     mScaleW = scaleW;
                     break;
             }
