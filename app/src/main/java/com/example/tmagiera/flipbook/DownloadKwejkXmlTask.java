@@ -1,9 +1,7 @@
 package com.example.tmagiera.flipbook;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.ListView;
 
@@ -18,8 +16,8 @@ import java.util.List;
 public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
     private Activity activity;
     private static List<Entry> entries;
-    private static Integer pageNumber;
-    private boolean emitPageNumber = false;
+    private Integer pageNumber = 0;
+    private static EntryAdapter adapter;
 
     public DownloadKwejkXmlTask(Activity activity) {
         this.activity = activity;
@@ -37,9 +35,6 @@ public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
     protected String doInBackground(String... url) {
         Log.d(this.getClass().getSimpleName(), "Downloading: " + url[0]);
         String data = download(url[0]);
-        if (url.length > 1) {
-            emitPageNumber = true;
-        }
 
         return data;
     }
@@ -68,22 +63,24 @@ public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
         }
 
         Log.d(this.getClass().getSimpleName(), "Number of entries: " + entries.size());
-        EntryAdapter adapter = new EntryAdapter(activity, entries);
-        ListView listView = (ListView) activity.findViewById(R.id.listview);
-        listView.setAdapter(adapter);
-        listView.setOnScrollListener(new EndlessScrollListener(activity));
 
-        if (emitPageNumber) {
-            Intent dataIntent = new Intent("pageNumber");
-            dataIntent.putExtra("pageNumber", pageNumber);
-
-            LocalBroadcastManager.getInstance(activity).sendBroadcast(dataIntent);
+        if (adapter == null) {
+            adapter = new EntryAdapter(activity, entries);
+            ListView listView = (ListView) activity.findViewById(R.id.listview);
+            listView.setAdapter(adapter);
+            listView.setOnScrollListener(new EndlessScrollListener(activity, pageNumber - 1));
+            Log.d(this.getClass().getSimpleName(), "Create new adapter");
+        } else {
+            activity.runOnUiThread(new Runnable() {
+                public void run() {
+                    adapter.notifyDataSetChanged();
+                    Log.d(this.getClass().getSimpleName(), "Notify adapter of a data change");
+                }
+            });
         }
     }
 
     private String download(String location) {
-
-        Log.d(this.getClass().getSimpleName(), location);
         try {
             URL url = new URL(location);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

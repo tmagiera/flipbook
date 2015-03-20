@@ -9,14 +9,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.tmagiera.flipbook.KwejkXmlParser.Entry;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.SimpleBitmapDisplayer;
 
 import java.util.List;
 
 public class EntryAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
+    private Context mContext;
     private List<Entry> mEntries;
-    private DrawableLoader drawableLoader = new DrawableLoader();
     private AnimatedGifLoader animatedGifLoader = new AnimatedGifLoader();
+    DisplayImageOptions options;
+
+
 //
 //    private static class ViewHolder {
 //        public final ImageView image;
@@ -31,6 +37,14 @@ public class EntryAdapter extends BaseAdapter {
     public EntryAdapter(Context context, List<Entry> entries) {
         mInflater = LayoutInflater.from(context);
         mEntries = entries;
+        mContext = context;
+
+        options = new DisplayImageOptions.Builder()
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .considerExifParams(true)
+                .displayer(new SimpleBitmapDisplayer())
+                .build();
     }
 
     @Override
@@ -69,15 +83,18 @@ public class EntryAdapter extends BaseAdapter {
 
         Entry entry = mEntries.get(position);
 
-        image.setMinimumHeight(entry.height);
         if (entry.source.endsWith(".gif")) {
-            animatedGifLoader.fetchAnimatedGifOnThread(entry.source, animatedgif);
+//            image.setEnabled(false);
+//            animatedgif.setMinimumHeight(entry.height);
+//            animatedGifLoader.fetchAnimatedGifOnThread(entry.source, animatedgif);
         } else {
-            drawableLoader.fetchDrawableOnThread(entry.source, image);
-        }
-        title.setText(entry.title);
+            animatedgif.setEnabled(false);
+            image.setMinimumHeight(entry.height);
+
+            ImageLoader.getInstance().displayImage(entry.source, image, options);
+       }
+        title.setText(entry.pageNumber + "@" + entry.height + ":" + entry.title);
 
         return convertView;
     }
-
 }

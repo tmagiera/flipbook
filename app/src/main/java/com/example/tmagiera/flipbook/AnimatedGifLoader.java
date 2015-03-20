@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AnimatedGifLoader {
-    private final static int cacheSize = 20;
+    private final static int cacheSize = 1;
     private static Map<String, byte[]> drawableMap;
     //private WeakReference<ImageView> imageViewReference;
 
@@ -32,18 +32,19 @@ public class AnimatedGifLoader {
         }
 
         try {
+            Log.d(this.getClass().getSimpleName(), "requesting a gif :" + urlString);
             InputStream is = fetch(urlString);
             byte[] animatedgif = ByteStreams.toByteArray(is);
-
-            if (drawableMap.size() > cacheSize) {
-                for (Map.Entry<String, byte[]> entry : drawableMap.entrySet()) {
-                    drawableMap.remove(entry.getKey());
-                    Log.d(this.getClass().getSimpleName(),"removed from cache: " + entry.getKey());
-                    break;
-                };
-            }
-            drawableMap.put(urlString, animatedgif);
-            Log.d(this.getClass().getSimpleName(), "got a gif");
+//
+//            if (drawableMap.size() > cacheSize) {
+//                for (Map.Entry<String, byte[]> entry : drawableMap.entrySet()) {
+//                    drawableMap.remove(entry.getKey());
+//                    Log.d(this.getClass().getSimpleName(),"removed from cache: " + entry.getKey());
+//                    break;
+//                };
+//            }
+//            drawableMap.put(urlString, animatedgif);
+            Log.d(this.getClass().getSimpleName(), "got a gif :" + urlString);
             return animatedgif;
         } catch (MalformedURLException e) {
             Log.e(this.getClass().getSimpleName(), "fetchDrawable failed", e);
@@ -67,6 +68,7 @@ public class AnimatedGifLoader {
             @Override
             public void handleMessage(Message message) {
                 //imageViewReference.get().setImageDrawable((Drawable) message.obj);
+//                imageView.animate();
                 imageView.setAnimatedGif((byte[]) message.obj, AnimatedGifImageView.TYPE.STREACH_TO_FIT);
             }
         };

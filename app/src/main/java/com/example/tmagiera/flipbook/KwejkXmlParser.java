@@ -49,6 +49,10 @@ public class KwejkXmlParser {
         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
         parser.setInput(new ByteArrayInputStream(Charset.forName("UTF-16").encode(xml).array()), null);
         parser.nextTag();
+        readPageNumbersSection(parser);
+
+        parser.setInput(new ByteArrayInputStream(Charset.forName("UTF-16").encode(xml).array()), null);
+        parser.nextTag();
         readFeed(parser);
     }
 
@@ -58,6 +62,23 @@ public class KwejkXmlParser {
 
     public Integer getPageNumber() {
         return pageNumber;
+    }
+
+    private void readPageNumbersSection(XmlPullParser parser) throws XmlPullParserException, IOException {
+        parser.require(XmlPullParser.START_TAG, ns, "xml");
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
+            String name = parser.getName();
+            // Starts by looking for the entry tag
+            if (name.equals("paging")) {
+                pageNumber = readPageNumber(parser);
+                return;
+            } else {
+                skip(parser);
+            }
+        }
     }
 
     private void readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
@@ -73,8 +94,6 @@ public class KwejkXmlParser {
                 if (entry != null) {
                     entries.add(entry);
                 }
-            } else if (name.equals("paging")) {
-                pageNumber = readPageNumber(parser);
             } else {
                 skip(parser);
             }
@@ -82,13 +101,15 @@ public class KwejkXmlParser {
     }
 
     public static class Entry {
+        public final Integer pageNumber;
         public final Integer id;
         public final String source;
         public final String title;
         public final Integer height;
         public final Integer width;
 
-        public Entry(Integer id, String source, String title, Integer height, Integer width) {
+        public Entry(Integer pageNumber, Integer id, String source, String title, Integer height, Integer width) {
+            this.pageNumber = pageNumber;
             this.id = id;
             this.source = source;
             this.title = title;
@@ -136,7 +157,7 @@ public class KwejkXmlParser {
         }
 
         Log.d("KwejkParser", "id: " + id + ";source: " + source + ";title " + title + ";height " + height + ";width " + width);
-        return new Entry(id, source, title, height, width);
+        return new Entry(pageNumber, id, source, title, height, width);
     }
 
 

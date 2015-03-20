@@ -8,16 +8,17 @@ import android.widget.AbsListView;
  */
 public class EndlessScrollListener implements AbsListView.OnScrollListener {
 
-    private int visibleThreshold = 5;
-    private int currentPage = 0;
+    private int visibleThreshold = 10;
+    private int currentPage;
     private int previousTotal = 0;
     private boolean loading = true;
     private Activity activity;
 
     public EndlessScrollListener() {
     }
-    public EndlessScrollListener(Activity activity) {
+    public EndlessScrollListener(Activity activity, Integer currentPage) {
         this.activity = activity;
+        this.currentPage = currentPage;
     }
 
     @Override
@@ -27,15 +28,14 @@ public class EndlessScrollListener implements AbsListView.OnScrollListener {
             if (totalItemCount > previousTotal) {
                 loading = false;
                 previousTotal = totalItemCount;
-                currentPage++;
+                currentPage--;
             }
         }
         if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
             // I load the next page of gigs using a background task,
             // but you can call any function here.
             DownloadKwejkXmlTask task = new DownloadKwejkXmlTask(activity);
-            Integer nextPageNumber = task.getPageNumber() + 1;
-            task.execute("http://api.kwejk.pl?page=" + nextPageNumber);
+            task.execute("http://api.kwejk.pl?page=" + currentPage);
 
             loading = true;
         }

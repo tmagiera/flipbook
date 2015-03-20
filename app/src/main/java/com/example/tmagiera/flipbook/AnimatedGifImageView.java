@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -221,6 +222,7 @@ public class AnimatedGifImageView extends ImageView {
                 mMovie.setTime(relTime);
                 canvas.save(Canvas.MATRIX_SAVE_FLAG);
                 canvas.scale(mScaleW, mScaleH);
+                Log.d(this.getClass().getSimpleName(), "draw movie :" + mMovie.toString());
                 mMovie.draw(canvas, mLeft / mScaleW, mTop / mScaleH);
                 canvas.restore();
                 invalidate();

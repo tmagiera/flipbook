@@ -6,6 +6,10 @@ import android.support.v7.app.ActionBarActivity;
 import android.widget.FrameLayout;
 
 import com.example.tmagiera.flipbook.KwejkXmlParser.Entry;
+import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 
 import java.util.List;
 
@@ -23,19 +27,20 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mActivity = this;
+
+        ImageLoaderConfiguration.Builder config = new ImageLoaderConfiguration.Builder(this);
+        config.threadPriority(Thread.NORM_PRIORITY - 2);
+        config.denyCacheImageMultipleSizesInMemory();
+        config.diskCacheFileNameGenerator(new Md5FileNameGenerator());
+        config.diskCacheSize(50 * 1024 * 1024); // 50 MiB
+        config.tasksProcessingOrder(QueueProcessingType.LIFO);
+        config.writeDebugLogs(); // Remove for release app
+
+        // Initialize ImageLoader with configuration.
+        ImageLoader.getInstance().init(config.build());
+
+
         setContentView(R.layout.activity_main);
-//        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter("pageNumber"));
-        new DownloadKwejkXmlTask(this).execute("http://api.kwejk.pl", "emitPageNumber");
+        new DownloadKwejkXmlTask(this).execute("http://api.kwejk.pl");
     }
-//
-//    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            Integer pageNumber = intent.getIntExtra("pageNumber", 0);
-//            Log.d("Broadcasted", pageNumber.toString());
-//            for (int i = pageNumber - 1; i > pageNumber - 3; i--) {
-//                new DownloadKwejkXmlTask(mActivity).execute("http://api.kwejk.pl?page=" + i);
-//            }
-//        }
-//    };
 }
