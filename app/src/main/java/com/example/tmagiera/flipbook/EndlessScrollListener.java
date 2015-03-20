@@ -1,5 +1,6 @@
 package com.example.tmagiera.flipbook;
 
+import android.app.Activity;
 import android.widget.AbsListView;
 
 /**
@@ -11,11 +12,12 @@ public class EndlessScrollListener implements AbsListView.OnScrollListener {
     private int currentPage = 0;
     private int previousTotal = 0;
     private boolean loading = true;
+    private Activity activity;
 
     public EndlessScrollListener() {
     }
-    public EndlessScrollListener(int visibleThreshold) {
-        this.visibleThreshold = visibleThreshold;
+    public EndlessScrollListener(Activity activity) {
+        this.activity = activity;
     }
 
     @Override
@@ -31,7 +33,9 @@ public class EndlessScrollListener implements AbsListView.OnScrollListener {
         if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
             // I load the next page of gigs using a background task,
             // but you can call any function here.
-            //new DownloadKwejkXmlTask().execute("");
+            DownloadKwejkXmlTask task = new DownloadKwejkXmlTask(activity);
+            Integer nextPageNumber = task.getPageNumber() + 1;
+            task.execute("http://api.kwejk.pl?page=" + nextPageNumber);
 
             loading = true;
         }

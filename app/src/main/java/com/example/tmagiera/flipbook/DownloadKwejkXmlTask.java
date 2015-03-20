@@ -18,11 +18,15 @@ import java.util.List;
 public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
     private Activity activity;
     private static List<Entry> entries;
-    private Integer pageNumber;
+    private static Integer pageNumber;
     private boolean emitPageNumber = false;
 
     public DownloadKwejkXmlTask(Activity activity) {
         this.activity = activity;
+    }
+
+    public Integer getPageNumber() {
+        return pageNumber;
     }
 
     @Override
@@ -67,6 +71,7 @@ public class DownloadKwejkXmlTask extends AsyncTask<String, String, String> {
         EntryAdapter adapter = new EntryAdapter(activity, entries);
         ListView listView = (ListView) activity.findViewById(R.id.listview);
         listView.setAdapter(adapter);
+        listView.setOnScrollListener(new EndlessScrollListener(activity));
 
         if (emitPageNumber) {
             Intent dataIntent = new Intent("pageNumber");

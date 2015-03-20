@@ -16,6 +16,7 @@ public class EntryAdapter extends BaseAdapter {
     private LayoutInflater mInflater;
     private List<Entry> mEntries;
     private DrawableLoader drawableLoader = new DrawableLoader();
+    private AnimatedGifLoader animatedGifLoader = new AnimatedGifLoader();
 //
 //    private static class ViewHolder {
 //        public final ImageView image;
@@ -50,12 +51,14 @@ public class EntryAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ImageView image;
+        AnimatedGifImageView animatedgif;
         TextView title;
 
  //       if (convertView == null) {
             convertView = mInflater.inflate(R.layout.list_entry, parent, false);
 //            Log.d("EntryAdapter", convertView.toString());
             image = (ImageView)convertView.findViewById(R.id.entryImage);
+            animatedgif = (AnimatedGifImageView)convertView.findViewById(R.id.entryAnimatedGif);
             title = (TextView)convertView.findViewById(R.id.entryTitle);
 //            convertView.setTag(new ViewHolder(image, title));
 //        } else {
@@ -67,7 +70,11 @@ public class EntryAdapter extends BaseAdapter {
         Entry entry = mEntries.get(position);
 
         image.setMinimumHeight(entry.height);
-        drawableLoader.fetchDrawableOnThread(entry.source, image);
+        if (entry.source.endsWith(".gif")) {
+            animatedGifLoader.fetchAnimatedGifOnThread(entry.source, animatedgif);
+        } else {
+            drawableLoader.fetchDrawableOnThread(entry.source, image);
+        }
         title.setText(entry.title);
 
         return convertView;

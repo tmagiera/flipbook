@@ -1,10 +1,10 @@
 package com.example.tmagiera.flipbook;
 
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.ImageView;
+
+import com.google.common.io.ByteStreams;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -16,16 +16,16 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DrawableLoader {
+public class AnimatedGifLoader {
     private final static int cacheSize = 20;
-    private static Map<String, Drawable> drawableMap;
+    private static Map<String, byte[]> drawableMap;
     //private WeakReference<ImageView> imageViewReference;
 
-    public DrawableLoader() {
-        drawableMap = new HashMap<String, Drawable>();
+    public AnimatedGifLoader() {
+        drawableMap = new HashMap<String, byte[]>();
     }
 
-    public Drawable fetchDrawable(String urlString) {
+    public byte[] fetchDrawable(String urlString) {
         if (drawableMap.containsKey(urlString)) {
             Log.d(this.getClass().getSimpleName(), "returned from cache :" + urlString);
             return drawableMap.get(urlString);
@@ -33,20 +33,18 @@ public class DrawableLoader {
 
         try {
             InputStream is = fetch(urlString);
-            Drawable drawable = Drawable.createFromStream(is, "src");
+            byte[] animatedgif = ByteStreams.toByteArray(is);
 
             if (drawableMap.size() > cacheSize) {
-                for (Map.Entry<String, Drawable> entry : drawableMap.entrySet()) {
+                for (Map.Entry<String, byte[]> entry : drawableMap.entrySet()) {
                     drawableMap.remove(entry.getKey());
                     Log.d(this.getClass().getSimpleName(),"removed from cache: " + entry.getKey());
                     break;
                 };
             }
-            drawableMap.put(urlString, drawable);
-            Log.d(this.getClass().getSimpleName(), "got a thumbnail drawable: " + drawable.getBounds() + ", "
-                    + drawable.getIntrinsicHeight() + "," + drawable.getIntrinsicWidth() + ", "
-                    + drawable.getMinimumHeight() + "," + drawable.getMinimumWidth());
-            return drawable;
+            drawableMap.put(urlString, animatedgif);
+            Log.d(this.getClass().getSimpleName(), "got a gif");
+            return animatedgif;
         } catch (MalformedURLException e) {
             Log.e(this.getClass().getSimpleName(), "fetchDrawable failed", e);
             return null;
@@ -56,27 +54,27 @@ public class DrawableLoader {
         }
     }
 
-    public void fetchDrawableOnThread(final String urlString, final ImageView imageView) {
+    public void fetchAnimatedGifOnThread(final String urlString, final AnimatedGifImageView imageView) {
 
         //imageViewReference = new WeakReference<ImageView>(imageView);
 
         if (drawableMap.containsKey(urlString)) {
             //imageViewReference.get().setImageDrawable(drawableMap.get(urlString));
-            imageView.setImageDrawable(drawableMap.get(urlString));
+            imageView.setAnimatedGif(drawableMap.get(urlString), AnimatedGifImageView.TYPE.FIT_CENTER);
         }
 
         final Handler handler = new Handler() {
             @Override
             public void handleMessage(Message message) {
                 //imageViewReference.get().setImageDrawable((Drawable) message.obj);
-                imageView.setImageDrawable((Drawable) message.obj);
+                imageView.setAnimatedGif((byte[]) message.obj, AnimatedGifImageView.TYPE.FIT_CENTER);
             }
         };
 
         Thread thread = new Thread() {
             @Override
             public void run() {
-                Drawable drawable = fetchDrawable(urlString);
+                byte[] drawable = fetchDrawable(urlString);
                 Message message = handler.obtainMessage(1, drawable);
                 handler.sendMessage(message);
             }
