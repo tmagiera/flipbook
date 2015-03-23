@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.widget.FrameLayout;
 
+import com.crashlytics.android.Crashlytics;
 import com.example.tmagiera.flipbook.KwejkXmlParser.Entry;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -12,6 +13,8 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 
 import java.util.List;
+
+import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends ActionBarActivity {
     private static Activity mActivity;
@@ -26,6 +29,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         mActivity = this;
 
         ImageLoaderConfiguration.Builder config = new ImageLoaderConfiguration.Builder(this);
