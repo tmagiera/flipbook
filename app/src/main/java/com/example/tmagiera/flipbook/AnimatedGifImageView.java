@@ -8,19 +8,17 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 /**
  * Created by tmagiera on 2015-03-20.
  */
 public class AnimatedGifImageView extends ImageView {
+
+    private static Canvas mCanvas;
 
     public static enum TYPE {
         FIT_CENTER, STREACH_TO_FIT, AS_IS
@@ -44,43 +42,6 @@ public class AnimatedGifImageView extends ImageView {
     private Movie mMovie = null;
     private long mMovieStart = 0;
     private TYPE mType = TYPE.FIT_CENTER;
-
-    public void setAnimatedGif(int rawResourceId, TYPE streachType) {
-        setImageBitmap(null);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-        mType = streachType;
-        animatedGifImage = true;
-        is = getContext().getResources().openRawResource(rawResourceId);
-        try {
-            mMovie = Movie.decodeStream(is);
-        } catch (Exception e) {
-            e.printStackTrace();
-            byte[] array = streamToBytes(is);
-            mMovie = Movie.decodeByteArray(array, 0, array.length);
-        }
-        p = new Paint();
-    }
-
-    public void setAnimatedGif(String filePath, TYPE streachType) throws FileNotFoundException {
-        setImageBitmap(null);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
-        mType = streachType;
-        animatedGifImage = true;
-        InputStream is;
-        try {
-            mMovie = Movie.decodeFile(filePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-            is = new FileInputStream(filePath);
-            byte[] array = streamToBytes(is);
-            mMovie = Movie.decodeByteArray(array, 0, array.length);
-        }
-        p = new Paint();
-    }
 
     public void setAnimatedGif(byte[] byteArray, TYPE streachType) {
         setImageBitmap(null);
@@ -123,19 +84,6 @@ public class AnimatedGifImageView extends ImageView {
     private int mMeasuredMovieHeight;
     private float mLeft;
     private float mTop;
-
-    private static byte[] streamToBytes(InputStream is) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream(1024);
-        byte[] buffer = new byte[1024];
-        int len;
-        try {
-            while ((len = is.read(buffer)) >= 0) {
-                os.write(buffer, 0, len);
-            }
-        } catch (java.io.IOException e) {
-        }
-        return os.toByteArray();
-    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -207,28 +155,32 @@ public class AnimatedGifImageView extends ImageView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (animatedGifImage) {
-            long now = android.os.SystemClock.uptimeMillis();
-            if (mMovieStart == 0) { // first time
-                mMovieStart = now;
-            }
-            if (mMovie != null) {
-                p.setAntiAlias(true);
-                int dur = mMovie.duration();
-                if (dur == 0) {
-                    dur = 1000;
-                }
-                int relTime = (int) ((now - mMovieStart) % dur);
-                mMovie.setTime(relTime);
-                canvas.save(Canvas.MATRIX_SAVE_FLAG);
-                canvas.scale(mScaleW, mScaleH);
-                Log.d(this.getClass().getSimpleName(), "draw movie :" + mMovie.toString());
-                mMovie.draw(canvas, mLeft / mScaleW, mTop / mScaleH);
-                canvas.restore();
-                invalidate();
-            }
-        }
-
+        this.mCanvas = canvas;
+        drawOnCanvas();
     }
 
+    public void drawOnCanvas() {
+        if (mCanvas == null || !animatedGifImage) {
+            return;
+        }
+
+        long now = android.os.SystemClock.uptimeMillis();
+        if (mMovieStart == 0) { // first time
+            mMovieStart = now;
+        }
+        if (mMovie != null) {
+            p.setAntiAlias(true);
+            int dur = mMovie.duration();
+            if (dur == 0) {
+                dur = 1000;
+            }
+            int relTime = (int) ((now - mMovieStart) % dur);
+            mMovie.setTime(relTime);
+            mCanvas.save(Canvas.MATRIX_SAVE_FLAG);
+            mCanvas.scale(mScaleW, mScaleH);
+            mMovie.draw(mCanvas, mLeft / mScaleW, mTop / mScaleH);
+            mCanvas.restore();
+            invalidate();
+        }
+    }
 }

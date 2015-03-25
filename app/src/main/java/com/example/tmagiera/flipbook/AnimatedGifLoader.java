@@ -17,35 +17,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AnimatedGifLoader {
-    private final static int cacheSize = 1;
-    private static Map<String, byte[]> drawableMap;
-    //private WeakReference<ImageView> imageViewReference;
+
+    private static Map<String, byte[]> gifMap;
 
     public AnimatedGifLoader() {
-        drawableMap = new HashMap<String, byte[]>();
+        gifMap = new HashMap<String, byte[]>();
     }
 
     public byte[] fetchDrawable(String urlString) {
-        if (drawableMap.containsKey(urlString)) {
+        if (gifMap.containsKey(urlString)) {
             Log.d(this.getClass().getSimpleName(), "returned from cache :" + urlString);
-            return drawableMap.get(urlString);
+            return gifMap.get(urlString);
         }
 
         try {
             Log.d(this.getClass().getSimpleName(), "requesting a gif :" + urlString);
             InputStream is = fetch(urlString);
-            byte[] animatedgif = ByteStreams.toByteArray(is);
-//
-//            if (drawableMap.size() > cacheSize) {
-//                for (Map.Entry<String, byte[]> entry : drawableMap.entrySet()) {
-//                    drawableMap.remove(entry.getKey());
-//                    Log.d(this.getClass().getSimpleName(),"removed from cache: " + entry.getKey());
-//                    break;
-//                };
-//            }
-//            drawableMap.put(urlString, animatedgif);
+            byte[] animatedGif = ByteStreams.toByteArray(is);
+            gifMap.put(urlString, animatedGif);
+
             Log.d(this.getClass().getSimpleName(), "got a gif :" + urlString);
-            return animatedgif;
+            return animatedGif;
         } catch (MalformedURLException e) {
             Log.e(this.getClass().getSimpleName(), "fetchDrawable failed", e);
             return null;
@@ -55,21 +47,25 @@ public class AnimatedGifLoader {
         }
     }
 
-    public void fetchAnimatedGifOnThread(final String urlString, final AnimatedGifImageView imageView) {
+    public void fetchAnimatedGifOnThread(final String urlString, final AnimatedGifImageView animatedGif) {
 
-        //imageViewReference = new WeakReference<ImageView>(imageView);
-
-        if (drawableMap.containsKey(urlString)) {
+        if (gifMap.containsKey(urlString)) {
             //imageViewReference.get().setImageDrawable(drawableMap.get(urlString));
-            imageView.setAnimatedGif(drawableMap.get(urlString), AnimatedGifImageView.TYPE.STREACH_TO_FIT);
+            animatedGif.setAnimatedGif(gifMap.get(urlString), AnimatedGifImageView.TYPE.FIT_CENTER);
         }
+
+        //final WeakReference<AnimatedGifImageView> animatedGifViewReference = new WeakReference(animatedGif);
 
         final Handler handler = new Handler() {
             @Override
             public void handleMessage(Message message) {
-                //imageViewReference.get().setImageDrawable((Drawable) message.obj);
-//                imageView.animate();
-                imageView.setAnimatedGif((byte[]) message.obj, AnimatedGifImageView.TYPE.STREACH_TO_FIT);
+                //animatedGifViewReference.get().setAnimatedGif((byte[]) message.obj, AnimatedGifImageView.TYPE.STREACH_TO_FIT);
+//                imageView.animatge();
+                //imageView.setEnabled(true);
+                //imageView.setBackground(R.drawable.ic_loading);
+                animatedGif.setAnimatedGif((byte[]) message.obj, AnimatedGifImageView.TYPE.STREACH_TO_FIT);
+                //animatedGif.invalidate();
+                //imageView.setEnabled(true);
             }
         };
 

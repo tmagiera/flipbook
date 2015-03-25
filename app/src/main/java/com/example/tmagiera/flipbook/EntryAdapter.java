@@ -23,16 +23,17 @@ public class EntryAdapter extends BaseAdapter {
     DisplayImageOptions options;
 
 
-//
-//    private static class ViewHolder {
-//        public final ImageView image;
-//        public final TextView title;
-//
-//        public ViewHolder(ImageView image, TextView title) {
-//            this.image = image;
-//            this.title = title;
-//        }
-//    }
+    private static class ViewHolder {
+        public final ImageView image;
+        public final AnimatedGifImageView animatedGifImageView;
+        public final TextView title;
+
+        public ViewHolder(ImageView image, AnimatedGifImageView animatedGifImageView, TextView title) {
+            this.image = image;
+            this.animatedGifImageView = animatedGifImageView;
+            this.title = title;
+        }
+    }
 
     public EntryAdapter(Context context, List<Entry> entries) {
         mInflater = LayoutInflater.from(context);
@@ -40,6 +41,8 @@ public class EntryAdapter extends BaseAdapter {
         mContext = context;
 
         options = new DisplayImageOptions.Builder()
+                .showImageOnLoading(R.drawable.ic_loading)
+                .showImageOnFail(R.drawable.ic_error_loading)
                 .cacheInMemory(true)
                 .cacheOnDisk(true)
                 .considerExifParams(true)
@@ -68,29 +71,29 @@ public class EntryAdapter extends BaseAdapter {
         AnimatedGifImageView animatedgif;
         TextView title;
 
- //       if (convertView == null) {
+        //if (convertView == null) {
             convertView = mInflater.inflate(R.layout.list_entry, parent, false);
 //            Log.d("EntryAdapter", convertView.toString());
             image = (ImageView)convertView.findViewById(R.id.entryImage);
             animatedgif = (AnimatedGifImageView)convertView.findViewById(R.id.entryAnimatedGif);
             title = (TextView)convertView.findViewById(R.id.entryTitle);
-//            convertView.setTag(new ViewHolder(image, title));
+//            convertView.setTag(new ViewHolder(image, animatedgif, title));
 //        } else {
 //            ViewHolder holder = (ViewHolder)convertView.getTag();
 //            image = holder.image;
+//            animatedgif = holder.animatedGifImageView;
 //            title = holder.title;
 //        }
 
         Entry entry = mEntries.get(position);
 
         if (entry.source.endsWith(".gif")) {
-//            image.setEnabled(false);
-//            animatedgif.setMinimumHeight(entry.height);
-//            animatedGifLoader.fetchAnimatedGifOnThread(entry.source, animatedgif);
+            image.setEnabled(false);
+            animatedGifLoader.fetchAnimatedGifOnThread(entry.source, animatedgif);
         } else {
             animatedgif.setEnabled(false);
-            image.setMinimumHeight(entry.height);
-
+            //image.setEnabled(false);
+            //image.setMinimumHeight(convertView.getMeasuredWidth()/entry.width * entry.height);
             ImageLoader.getInstance().displayImage(entry.source, image, options);
        }
         title.setText(entry.pageNumber + "@" + entry.height + ":" + entry.title);
